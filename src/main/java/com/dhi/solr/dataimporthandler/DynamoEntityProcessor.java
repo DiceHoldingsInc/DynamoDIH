@@ -201,7 +201,7 @@ public class DynamoEntityProcessor extends EntityProcessorBase {
             LOG.debug(String.format("No projection specified in entity attribute: [%s]", projectionExprField));
         }
         
-        queryParams.setNameMap(getyQueryNameMap(nameMapField));
+        queryParams.setNameMap(getQueryNameMap(nameMapField));
         queryParams.setValueMap(getQueryValueMap(valueMapField));
         
         return queryParams;
@@ -227,7 +227,7 @@ public class DynamoEntityProcessor extends EntityProcessorBase {
     protected Map<String, String> getPrefixedMapKeys(Map<String, String> prefixMap, String prefix) {
         TreeMap<String, String> treeMap = new TreeMap<>();
         treeMap.putAll(prefixMap);
-        SortedMap<String, String> filtered = treeMap.tailMap(prefix);
+        SortedMap<String, String> filtered = treeMap.subMap(prefix, prefix + Character.MAX_VALUE);
         return filtered;
     }
     
@@ -250,9 +250,11 @@ public class DynamoEntityProcessor extends EntityProcessorBase {
      * 
      * @return
      */
-    protected NameMap getyQueryNameMap(String fieldPrefix) {
+    protected NameMap getQueryNameMap(String fieldPrefix) {
         NameMap nameMap = new NameMap();
         
+        // We want to get all parameters of the <entity> configuration that begin with `fieldPrefix`
+        // So the first step is to get every single field=value pair from the entity configuration
         Map<String, String> attributes = getAllEntityAttributes();
         Map<String, String> nameAttributes = getPrefixedMapKeys(attributes, fieldPrefix);
         
