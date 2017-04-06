@@ -24,7 +24,7 @@ The Dynamo data-import-handler configuration is similar to other DIH configurati
 
 All configuration parameters support Solr Variable injection.
 
-####DataSource Parameters
+#### DataSource Parameters
 All ``<dataSource>`` parameters are optional
 
 - ``endpoint`` - AWS Dynamo Endpoint (expert)
@@ -38,9 +38,9 @@ All ``<dataSource>`` parameters are optional
 - ``credentialProfilename`` - Explicitly specify which profile name within the profile file to use.
 - ``credentialUseProfileDefaults`` - (true/false) Use the default profiles file in the default location, use NO other form of AWS authentication.
 - ``credentialUseJavaProperties`` - (true/false) Use java properties for authentication, use NO other form of AWS authentication.
-- ``convertType`` - Convert field types to the explicitly defined type in each <field> element.
+- ``convertType`` - Convert field types to the explicitly defined type in each ``<field>`` element.
 
-####Entity Parameters
+#### Entity Parameters
 The only required entity parameter is ``tableName``
 
 - ``tableName`` - (required) the dynamo table name to retrieve records from.
@@ -50,7 +50,7 @@ The only required entity parameter is ``tableName``
 - ``nameMap`` - (Field Prefix) When your query contains keyword values, you must use nameMap to provide alternative names, that arent' reserved. (see NameMap below)
 - ``valueMap`` - (Field Prefix) If you wish to inject variables into your query, you can use a Value Map to (safely) achieve this. (see ValueMap below)
 
-###Example DIH Configuration
+### Example DIH Configuration
 ```
 <dataConfig>
   <dataSource type="com.dhi.solr.dataimporthandler.DynamoDataSource" 
