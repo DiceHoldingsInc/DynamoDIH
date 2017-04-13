@@ -148,7 +148,7 @@ public class DynamoEntityProcessor extends EntityProcessorBase {
     }
     
     protected void buildCustomVariables() {
-        context.getVariableResolver().resolve("dataimporter.last_index_time");
+        context.getVariableResolver().resolve("dataimporter.last_index_time"); // TODO use constant 
         VariableResolver resolve = context.getVariableResolver();
         String lastImportStr = (String) resolve.resolve(VARIABLE_LAST_IMPORT);
 
@@ -175,8 +175,8 @@ public class DynamoEntityProcessor extends EntityProcessorBase {
         Long lastIndexMs = lastImportDate.getTime();
         Long lastIndexSec  = lastIndexMs / 1000;
         Map<String, Object> customVars = new HashMap<>();
-        customVars.put("last_index_time_epoch_ms", lastIndexMs.toString());
-        customVars.put("last_index_time_epoch_sec", lastIndexSec.toString());
+        customVars.put("last_index_time_epoch_ms", lastIndexMs.toString()); // TODO use constant 
+        customVars.put("last_index_time_epoch_sec", lastIndexSec.toString()); // TODO use constant
         resolve.addNamespace(VARIABLE_CUSTOM_NAMESPACE, customVars);
         
         String indexEpochMs = (String) resolve.resolve(VARIABLE_CUSTOM_NAMESPACE + "." + "last_index_time_epoch_ms");
