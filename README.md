@@ -56,7 +56,7 @@ data-import-handler runs it will save the last import time for your collection t
 You can specify the url parameters to execute each time the dataimport runs.
 
 Here is an example/default ``dataimport.properties`` file.
-```xml
+```ini
 #################################################
 #                                               #
 #       dataimport scheduler properties         #
@@ -227,7 +227,7 @@ an ``<entity>`` configuration like this:
 ```xml
 <entity processor="com.dhi.solr.dataimporthandler.DynamoEntityProcessor"
         <!-- ... -->
-        filterExpression=""#yr between :start_yr and :end_yr""
+        filterExpression=""#yr between :start_yr and :end_yr"
         projectionExpression="#yr, title, info.rating"
         nameMapYear="#yr, year"
         valueMapStart="Int :start_yr, 1950"
