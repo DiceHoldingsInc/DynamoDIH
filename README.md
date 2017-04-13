@@ -56,7 +56,7 @@ data-import-handler runs it will save the last import time for your collection t
 You can specify the url parameters to execute each time the dataimport runs.
 
 Here is an example/default ``dataimport.properties`` file.
-```ini
+```bash
 #################################################
 #                                               #
 #       dataimport scheduler properties         #
