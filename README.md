@@ -134,11 +134,11 @@ and **DELTA IMPORT** is the ``tableName`` entity value.
 For the DELTA IMPORT at least one **Key Condition** or **Filter Conditon** must be specified.
 
 These entity fields are for DELTA IMPORT:
-    - ``DELTAkeyConditionExpression``
-    - ``DELTAfilterExpression``
-    - ``DELTAprojectionExpression``
-    - ``DELTAnameMap``
-    - ``DELTAvalueMap``
+- ``DELTAkeyConditionExpression``
+- ``DELTAfilterExpression``
+- ``DELTAprojectionExpression``
+- ``DELTAnameMap``
+- ``DELTAvalueMap``
 
 #### Custom Variables
 Dynamo does not support actual "DATE" objects by default, for this reason people often use epoch
@@ -147,8 +147,8 @@ index on a dynamo filed (attribute) containing an epoch date.
 We support this by helping you to build a custom **keyConditionExpression** using epoch seconds by provided custom variables.
 
 For deltaimport these custom variables are provided for you:
-    - ``dataimport.dynamo.last_index_time_epoch_sec``
-    - ``dataimport.dynamo.last_index_time_epoch_ms``
+- ``dataimport.dynamo.last_index_time_epoch_sec``
+- ``dataimport.dynamo.last_index_time_epoch_ms``
 
     
 The custom variables are created by reading the ``dataimport.last_index_time`` variable that Solr provides.
@@ -244,7 +244,10 @@ your value that will be evaluated when the request is evaluated.
 
 - ``${request.[url-argument]}``  where **url-argument** is the name of the url argument passed-into the DataImport request handler.
 
-For example the argument: ``custom_arg`` from the request: ``params=/select?qt=/dataimport&command=full-import&clean=false&commit=false&custom_arg=hello``
+For example the argument: 
+- ``custom_arg`` 
+from the request: 
+- ``params=/select?qt=/dataimport&command=full-import&clean=false&commit=false&custom_arg=hello``
 
 can be used in a valueMap like this:
 ```xml
