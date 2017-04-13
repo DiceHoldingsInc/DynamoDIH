@@ -166,7 +166,6 @@ this work.
             dataSource="DynamoDataSource"
             tableName="solr-data-import"
             pk="id"
-            <!-- Here is our condition expression that allows the Delta Import to work -->
             DELTAkeyConditionExpression="#updated >= :lastupdate"
             DELTAnameMapUpdate="#updated, update_time"
             DELTAvalueMapUpdate="Long :lastupdate, ${dataimport.dynamo.last_index_time_epoch_ms}"
@@ -197,7 +196,6 @@ Name Maps
 in the Dynamo query syntax. "year" is a reserved word, so if you want to use "year" in a projection:
 ```xml
 <entity processor="com.dhi.solr.dataimporthandler.DynamoEntityProcessor"
-        <!-- ... -->
         projectionExpression="#yr"
         nameMapYear="#yr, year" />
 ```
@@ -226,7 +224,6 @@ To accomplish this same query using the DataImportHandler configuration you woul
 an ``<entity>`` configuration like this:
 ```xml
 <entity processor="com.dhi.solr.dataimporthandler.DynamoEntityProcessor"
-        <!-- ... -->
         filterExpression=""#yr between :start_yr and :end_yr"
         projectionExpression="#yr, title, info.rating"
         nameMapYear="#yr, year"
