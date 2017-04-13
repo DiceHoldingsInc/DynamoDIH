@@ -143,7 +143,7 @@ These entity fields are for DELTA IMPORT:
 #### Custom Variables
 Dynamo does not support actual "DATE" objects by default, for this reason people often use epoch
 numbers for comparison of dates if they want to search using a ``keyConditionExpression`` by creating a secondary
-index on a dynamo filed (attribute) containing an epoch date.  
+index on a dynamo field (*attribute*) containing an epoch date.  
 We support this by helping you to build a custom **keyConditionExpression** using epoch seconds by provided custom variables.
 
 For deltaimport these custom variables are provided for you:
