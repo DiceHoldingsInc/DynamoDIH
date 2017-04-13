@@ -1,10 +1,6 @@
 package com.dhi.solr.dataimporthandler;
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSCredentialsProvider;
@@ -35,14 +31,13 @@ import java.lang.invoke.MethodHandles;
 import java.util.*;
 
 /**
- * Custom Data Sources can be used like so:
- * <dataSource type="com.foo.FooDataSource" prop1="hello"/>
+ * A custom DataSource to be used as a DataImportHandler that interacts with Amazons DynamoDB
  * 
- * Heres a JDBC data source example:
- * <dataSource name="jdbc" driver="oracle.jdbc.driver.OracleDriver" url="jdbc:oracle:thin:@//hostname:port/SID" user="db_username" password="db_password"/>
+ * Use this Data Source within your Data Import Handler configuration like so:
  * 
- * The properties passed into the <datasource> element are passed into the DataSource class as 
- * a Properties object.
+ *   <dataSource type="com.dhi.solr.dataimporthandler.DynamoDataSource"
+ *            applicationName="DynamoImport" name="DynamoDataSource"/>
+ * 
  * 
  * https://lucidworks.com/2013/08/26/notes-on-dih-architecture-solrs-data-import-handler-2/
  * 
@@ -153,17 +148,20 @@ public class DynamoDataSource extends DataSource<Iterator<Map<String, Object>>> 
         
         // If you explicitly say to use java properties, the properties must be present.
         if(useJavaPropertyCreds && !hasJavaPropertyCreds) {
-            throw new Exception(String.format("attribute [%s] is %s, but java properties are not defined: ('%s', '%s')", USE_JAVA_PROPERTIES, PROPERTY_TRUE, JAVA_PROPS_ACCESS_KEY, JAVA_PROPS_SECRET_KEY));
+            throw new Exception(String.format("attribute [%s] is %s, but java properties are not defined: ('%s', '%s')", 
+                    USE_JAVA_PROPERTIES, PROPERTY_TRUE, JAVA_PROPS_ACCESS_KEY, JAVA_PROPS_SECRET_KEY));
         }
         
         // you cannot use the default profile file, and also use a specific profile file.
         if(useDefaultProfilesFile && !profilesFile.isEmpty()) {
-            throw new Exception(String.format("If attribute [%s] is set, attribute [%s] cannot also be set", USE_DEFAULT_PROFILES, CREDENTIALS_PROFILES_FILE));
+            throw new Exception(String.format("If attribute [%s] is set, attribute [%s] cannot also be set", 
+                    USE_DEFAULT_PROFILES, CREDENTIALS_PROFILES_FILE));
         }
         
         // If you define a custom profile file, you must define the profile name to use (DEFAULT) for example.
         if(!profilesFile.isEmpty() && initProps.getProperty(CREDENTIALS_PROFILE_NAME, "").isEmpty()) {
-            throw new Exception(String.format("If attribute [%s] is set, attribute [%s] must also be set", CREDENTIALS_PROFILES_FILE, CREDENTIALS_PROFILE_NAME));
+            throw new Exception(String.format("If attribute [%s] is set, attribute [%s] must also be set", 
+                    CREDENTIALS_PROFILES_FILE, CREDENTIALS_PROFILE_NAME));
         }
         
         // If a custom endpoint is provided, region MUST also be provided. (this one isn't completely neccesary)
@@ -185,7 +183,7 @@ public class DynamoDataSource extends DataSource<Iterator<Map<String, Object>>> 
     /**
      * Resolve the region name to use
      * 
-     * If a region is given in in the properties, that region will be used.
+     * If a region is given in the properties, that region will be used.
      * Otherwise, If the program is running inside of an ec2 instances the current region will be used
      * Otherwise, The default region defined in the constant DEFAULT_REGION will be used.
      * 
@@ -260,8 +258,13 @@ public class DynamoDataSource extends DataSource<Iterator<Map<String, Object>>> 
             provider = new ProfileCredentialsProvider();
         }
         else if(profilesFile != null && !profilesFile.isEmpty()) {
+            // Use the custom profile configuration file and a specific profile name
             provider = new ProfileCredentialsProvider(profilesFile, profileName);
-        } 
+        }
+        else if ((profilesFile == null || profilesFile.isEmpty()) && profileName != null && !profileName.isEmpty()) {
+            // If the configuration has only specified the profileName, use that.
+            provider = new ProfileCredentialsProvider(profileName);
+        }
         else if (accessKey != null && !accessKey.isEmpty() && secretKey != null && !secretKey.isEmpty()) {
             // Use excplicit credentials
             BasicAWSCredentials awsCreds = new BasicAWSCredentials(accessKey, secretKey);
@@ -275,7 +278,7 @@ public class DynamoDataSource extends DataSource<Iterator<Map<String, Object>>> 
             provider = new DefaultAWSCredentialsProviderChain();
         }
         
-        LOG.info(String.format("using credential provider: [%s]", provider.getClass().getCanonicalName()));
+        LOG.info(String.format("using AWS credential provider: [%s]", provider.getClass().getName()));
         return provider;
     }
     
@@ -360,7 +363,8 @@ public class DynamoDataSource extends DataSource<Iterator<Map<String, Object>>> 
 
     /**
      * This method cannot be used with DynamoDataSource / DynamoEntityProcessor.  This is the default
-     * method called from EntityProcessorBase, but dynamo needs a QuerySpec, not a string to execute
+     * method called from EntityProcessorBase, but dynamo needs a series of arguments, not a string 
+     * to execute a query.
      * a query.
      * 
      * @param query
@@ -376,6 +380,7 @@ public class DynamoDataSource extends DataSource<Iterator<Map<String, Object>>> 
    * Get records for the given query.The return type depends on the
    * implementation .
    *
+   * @param context 
    * @param tableName The name of the table we are querying
    * @param query  A dynamo QuerySpec object constructed in DynamoEntityProcessor
    * @return returns an Iterator<Map<String, Object>> mapping field-name to field-value.
@@ -439,13 +444,16 @@ public class DynamoDataSource extends DataSource<Iterator<Map<String, Object>>> 
             // type - "type" the string type of the data to convert to
             String colTypeStr = map.get(DataImporter.TYPE);
 
-
             //DynamoTypes: B, BOOL, BS, L, M, N, NS, NULL, S, SS
             DynamoDBAttributeType dynamoType = DynamoDBAttributeType.valueOf(colTypeStr);
             if(dynamoType != null) {
                 colNameToType.put(col, dynamoType);
             } else {
-                LOG.warn(String.format("entity field [%s] invalid dynamo type: [%s]", solrName, colTypeStr));
+                List<String> validTypesDesc = new LinkedList<String>();
+                for (DynamoDBAttributeType theType : DynamoDBAttributeType.values()) {
+                    validTypesDesc.add(theType.toString());
+                }
+                LOG.warn(String.format("entity field with name:[%s] invalid dynamo type: [%s], valid types are: %s", solrName, colTypeStr, validTypesDesc.toString()));
             }
         }
         

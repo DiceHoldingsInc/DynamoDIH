@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.dhi.solr.dataimporthandler;
 
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
@@ -37,11 +32,15 @@ public class DynamoQueryParameters {
     
     ///// SET /////////////////////////////////////////////
     public void setNameMap(NameMap nameMap) {
-        this.nameMap = nameMap;
+        if(nameMap != null && !nameMap.isEmpty()) {
+            this.nameMap = nameMap;
+        }
     }
     
     public void setValueMap(ValueMap valueMap) {
-        this.valueMap = valueMap;
+        if(valueMap != null && !valueMap.isEmpty()) {
+            this.valueMap = valueMap;
+        }
     }
      
     public void setFilterExpression(String filterExpression) {
@@ -79,7 +78,26 @@ public class DynamoQueryParameters {
     
     @Override
     public String toString() {
-        return "";
+        
+        String nameMapDebug = null;
+        if(nameMap != null) {
+            nameMapDebug = nameMap.toString();
+        }
+        String valueMapDebug = null;
+        if(valueMap != null) {
+            valueMapDebug = valueMap.toString();
+        }
+        
+        return String.format("Key Condition: %s"
+                           + "%nFilter: %s"
+                           + "%nProjection: %s"
+                           + "%nName Map: %s"
+                           + "%nValue Map: %s",
+                            keyConditionExpression,
+                            filterExpression,
+                            projectionExpression,
+                            nameMapDebug,
+                            valueMapDebug);
     }
       
 }
