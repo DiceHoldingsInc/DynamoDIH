@@ -96,9 +96,13 @@ All ``<dataSource>`` parameters are optional
 - ``credentialUseJavaProperties`` - (true/false) Use java properties for authentication, use NO other form of AWS authentication.
 - ``convertType`` - Convert field types to the explicitly defined type in each ``<field>`` element. Supported types are dynamo type names: ``N, I, S, L, BOOL``
 
+Note that, whatever credentials you provide if ``stsRoleARN`` is specified, the credentials provided will be used to obtain
+the sts role!  When we assume a role, using Amazons STS it provides us with temporary credentials.  This is most useful for
+cross account authentication.
+
 ### Entity Parameters
 The only required entity parameter is ``tableName``
-- ``pk`` - used to compare records / duplicates.
+- ``pk`` - used to compare records / duplicates, this should be the name of your solr field. It will automatically be mapped to the corresponding dynamo field for set comparison and handling deletes.
 - ``tableName`` - (required) the dynamo table name to retrieve records from.
 - ``keyConditionExpression`` - a key condition expression to use with your query (if not used the dynamo table will be scanned!)
 - ``filterExpression`` -  a filter expression to use with your query, (applied after results are returned)
@@ -144,7 +148,7 @@ These entity fields are for DELTA IMPORT:
 Dynamo does not support actual "DATE" objects by default, for this reason people often use epoch
 numbers for comparison of dates if they want to search using a ``keyConditionExpression`` by creating a secondary
 index on a dynamo field (*attribute*) containing an epoch date.  
-We support this by helping you to build a custom **keyConditionExpression** using epoch seconds by provided custom variables.
+We support this by helping you to build a custom **keyConditionExpression** using epoch seconds by providing custom variables.
 
 For deltaimport these custom variables are provided for you:
 - ``dataimport.dynamo.last_index_time_epoch_sec``
@@ -193,7 +197,7 @@ Name Maps
 
 **Syntax:** ``nameMap[Unique-Name]="[key],[value]"``
 
-in the Dynamo query syntax. "year" is a reserved word, so if you want to use "year" in a projection:
+in the Dynamo query syntax. "year" is a reserved word, so if you want to use the dynamo field named "year" in a projection:
 ```xml
 <entity processor="com.dhi.solr.dataimporthandler.DynamoEntityProcessor"
         projectionExpression="#yr"
@@ -211,7 +215,7 @@ Value Maps
 
 **Syntax:** ``valueMap[Unique-Name]="[Type] :[FieldName], [Value]"``
 
-The dynamo documentation for Solr has several examples of doing exactly this for example:
+The dynamo documentation for Java has several examples of doing exactly this for example:
 ```java
  ScanSpec scanSpec = new ScanSpec()
                 .withProjectionExpression("#yr, title, info.rating")
@@ -251,7 +255,7 @@ from the request:
 
 can be used in a valueMap like this:
 ```xml
-    <entity valueMapCustom="String :custom, ${request.custom_arg}"
+    <entity valueMapCustom="String :custom, ${request.custom_arg}" />
 ```
 
 Other variables include:
@@ -264,11 +268,12 @@ Other variables include:
 
 TODO
 --------
-- Needs more thorough tests
+- Needs more thorough tests, make use of solrs embedded server/testing framework
 - Needs better POM / Build (includes too many dependencies)
 - Needs to add-to/support debug response so it can log usage after every import.
 - Deletions support needs to be added so stale records are removed.
 - OnError setting needs to be respected (if it isn't?)
+- Map/Path expansion so sub-maps can be extracted as field values.
 
 Feedback
 -------------
