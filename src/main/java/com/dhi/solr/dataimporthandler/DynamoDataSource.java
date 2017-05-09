@@ -36,7 +36,7 @@ import java.util.*;
  * Use this Data Source within your Data Import Handler configuration like so:
  * 
  *   <dataSource type="com.dhi.solr.dataimporthandler.DynamoDataSource"
- *            applicationName="DynamoImport" name="DynamoDataSource"/>
+ *            applicationName="DynamoImport" name="DynamoDataSource">
  * 
  * 
  * https://lucidworks.com/2013/08/26/notes-on-dih-architecture-solrs-data-import-handler-2/

@@ -57,7 +57,7 @@ public class DynamoEntityProcessor extends EntityProcessorBase {
     public static final String CONDITIONAL_EXPRESSION = "keyConditionExpression";
     public static final String FILTER_EXPRESSION = "filterExpression";
     public static final String PROJECTION_EXPRESSION = "projectionExpression";
-    public static final String DELTA_NAME_ATTRIBUTE = "DELTA"; // fields ending with this value will be used for DELTA queries.
+    public static final String DELTA_NAME_ATTRIBUTE = "DELTA"; // fields starting with this value will be used for DELTA queries.
     public static final String NAME_ATTR_DELIMITER = ",";
     public static final String VALUE_TYPE_DELIMITER = ":";
     public static final String VALUE_ATTR_DELIMITER = ",";
@@ -148,7 +148,7 @@ public class DynamoEntityProcessor extends EntityProcessorBase {
     }
     
     protected void buildCustomVariables() {
-        context.getVariableResolver().resolve("dataimporter.last_index_time"); // TODO use constant 
+        context.getVariableResolver().resolve("dataimporter.last_index_time");
         VariableResolver resolve = context.getVariableResolver();
         String lastImportStr = (String) resolve.resolve(VARIABLE_LAST_IMPORT);
 
@@ -158,6 +158,10 @@ public class DynamoEntityProcessor extends EntityProcessorBase {
         try {
             lastImportDate = dateFormat.parse(lastImportStr);
         } catch (ParseException e) {
+            // TODO, when this happens if the import is a DELTA IMPORT, we really can't continue
+            // without knowing the LAST DATE.  We could support a url argument such as "deltaImportDate"
+            // and tell the user to specify this in their query if they would like to run a DeltaImport
+            // with an explicit delta date.
             LOG.warn("Unable to parse the last import date, Note: custom date formats are not supported.", e);
             return;
         }
@@ -175,8 +179,8 @@ public class DynamoEntityProcessor extends EntityProcessorBase {
         Long lastIndexMs = lastImportDate.getTime();
         Long lastIndexSec  = lastIndexMs / 1000;
         Map<String, Object> customVars = new HashMap<>();
-        customVars.put("last_index_time_epoch_ms", lastIndexMs.toString()); // TODO use constant 
-        customVars.put("last_index_time_epoch_sec", lastIndexSec.toString()); // TODO use constant
+        customVars.put("last_index_time_epoch_ms", lastIndexMs.toString());
+        customVars.put("last_index_time_epoch_sec", lastIndexSec.toString());
         resolve.addNamespace(VARIABLE_CUSTOM_NAMESPACE, customVars);
         
         String indexEpochMs = (String) resolve.resolve(VARIABLE_CUSTOM_NAMESPACE + "." + "last_index_time_epoch_ms");
@@ -195,14 +199,9 @@ public class DynamoEntityProcessor extends EntityProcessorBase {
      * @return A 'row'.  The 'key' for the map is the column name and the 'value'
      *         is the value of that column. If there are no more rows to be
      *         returned, return 'null'
-     * @return 
      */
     @Override
     public Map<String, Object> nextRow() {
-        /*
-        context.replaceTokens(q) - replaces tokens in any string, that are variables such as 
-        the data import handler last modified date.
-        */
         if(rowIterator == null || !rowIterator.hasNext()) {
             rowIterator = null;
             return null;
