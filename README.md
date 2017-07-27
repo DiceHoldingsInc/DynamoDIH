@@ -246,7 +246,7 @@ your value that will be evaluated when the request is evaluated.
 
 **Request variables** can be injected from the DataImportHandler request arguments using:
 
-- ``${request.[url-argument]}``  where **url-argument** is the name of the url argument passed-into the DataImport request handler.
+- ``${dataimporter.request.[url-argument]}``  where **url-argument** is the name of the url argument passed-into the DataImport request handler.
 
 For example the argument: 
 - ``custom_arg`` 
@@ -269,7 +269,6 @@ Other variables include:
 TODO
 --------
 - Needs more thorough tests, make use of solrs embedded server/testing framework
-- Needs better POM / Build (includes too many dependencies)
 - Needs to add-to/support debug response so it can log usage after every import.
 - Deletions support needs to be added so stale records are removed.
 - OnError setting needs to be respected (if it isn't?)
