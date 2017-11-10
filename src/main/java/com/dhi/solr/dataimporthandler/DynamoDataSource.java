@@ -222,7 +222,7 @@ public class DynamoDataSource extends DataSource<Iterator<Map<String, Object>>> 
     protected ClientConfiguration getAwsClientConfig(int maxErrorRetries) {
         ClientConfiguration clientConfig = new ClientConfiguration();
         clientConfig.setConnectionTimeout(CONNECTION_TIMEOUT);
-        LOG.info("CONFIGURED MAX ERROR RETRIES:" + maxErrorRetries);
+        LOG.debug("Configured maxErrorRetries for dynamo client:" + maxErrorRetries);
         clientConfig.setMaxErrorRetry(maxErrorRetries);
         return clientConfig;
     }
