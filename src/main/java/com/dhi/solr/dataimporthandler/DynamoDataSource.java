@@ -69,6 +69,7 @@ public class DynamoDataSource extends DataSource<Iterator<Map<String, Object>>> 
     public static final String CREDENTIALS_PROFILE_NAME = "credentialProfileName";
     public static final String USE_DEFAULT_PROFILES = "credentialUseProfileDefaults";
     public static final String USE_JAVA_PROPERTIES = "credentialUseJavaProperties";
+    public static final String MAX_ERROR_RETRIES = "maxErrorRetries";
     
     public static final String CONVERT_FIELD_TYPES = CONVERT_TYPE;
     
@@ -82,6 +83,7 @@ public class DynamoDataSource extends DataSource<Iterator<Map<String, Object>>> 
     
     public static final Regions DEFAULT_REGION = Regions.US_EAST_1;
     public static final int CONNECTION_TIMEOUT = 30000;
+    
     
     public static final String ERROR_ACCESS_DENIED = "AccessDeniedException";
 
@@ -217,9 +219,11 @@ public class DynamoDataSource extends DataSource<Iterator<Map<String, Object>>> 
      * 
      * @return 
      */
-    protected ClientConfiguration getAwsClientConfig() {
+    protected ClientConfiguration getAwsClientConfig(int maxErrorRetries) {
         ClientConfiguration clientConfig = new ClientConfiguration();
         clientConfig.setConnectionTimeout(CONNECTION_TIMEOUT);
+        LOG.info("CONFIGURED MAX ERROR RETRIES:" + maxErrorRetries);
+        clientConfig.setMaxErrorRetry(maxErrorRetries);
         return clientConfig;
     }
     
@@ -298,6 +302,7 @@ public class DynamoDataSource extends DataSource<Iterator<Map<String, Object>>> 
         final String profileName = initProps.getProperty(CREDENTIALS_PROFILE_NAME, "");
         final String accessKey = initProps.getProperty(ACCESS_KEY, "");
         final String secretKey = initProps.getProperty(SECRET_KEY, "");
+        final int maxErrorRetries = Integer.parseInt(initProps.getProperty(MAX_ERROR_RETRIES, "10"));
 
         // Get aws credentials based upon the options provided.
         AWSCredentialsProvider credProvider = getAWSCredentials(
@@ -344,7 +349,7 @@ public class DynamoDataSource extends DataSource<Iterator<Map<String, Object>>> 
         
         AmazonDynamoDBClientBuilder clientBuilder = AmazonDynamoDBClientBuilder.standard();
         
-        ClientConfiguration clientConfig = getAwsClientConfig();
+        ClientConfiguration clientConfig = getAwsClientConfig(maxErrorRetries);
         clientBuilder.setClientConfiguration(clientConfig);
         
         if(!dynamoEndpoint.isEmpty()) {

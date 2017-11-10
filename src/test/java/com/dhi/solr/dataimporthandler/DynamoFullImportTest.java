@@ -5,22 +5,22 @@
  */
 package com.dhi.solr.dataimporthandler;
 
-import org.apache.solr.SolrTestCaseJ4;
+//import org.apache.solr.SolrTestCaseJ4;
 
-import org.junit.Before;
+//import org.junit.Before;
 
 /**
  * 
  * 
  * @author ben.demott
  */
-public class DynamoFullImportTest extends SolrTestCaseJ4 {
+/*public class DynamoFullImportTest extends SolrTestCaseJ4 {
     
     @Override
     @Before
     public void setUp() throws Exception {
-        super.setUp();
-        File home = createTempDir("dih-properties").toFile();
-        System.setProperty("solr.solr.home", home.getAbsolutePath());    
+        //super.setUp();
+        //File home = createTempDir("dih-properties").toFile();
+        //System.setProperty("solr.solr.home", home.getAbsolutePath());    
     }
-}
+}*/
