@@ -85,6 +85,7 @@ All ``<dataSource>`` parameters are optional
 
 - ``endpoint`` - AWS Dynamo Endpoint (expert)
 - ``region`` - Region name
+- ``maxErrorRetries`` - Default is 10, this is the maximum number or times to retry when the AWS dynamo client encounters an error that is worthy of retrying.  This is most useful when "Provisioned Throughput Exceeded" exceptions are encountered when capacity is low in test environments.
 - ``stsRoleARN`` - STS Role ARN to assume before connecting to Dynamo (will use credential settings).  This is typically required if you need to access a different AWS account. Perhaps your ``dev`` and ``production`` aws environments are separated into 2 different accounts.  The ``dev`` account might need to assume a role that is configured within ``production``.
 - ``stsEndpoint`` - Custom endpoint to use for sts (expert)
 - ``stsDuration`` - The duration of STS alternative credentials in seconds.
