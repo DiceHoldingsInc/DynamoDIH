@@ -163,65 +163,26 @@ public class DynamoResultIterator<T> implements Iterator<T> {
             throw e;
         }
         
+        // The number type in dynamo causes a conversion to BigDecimal, which causes serialization issues in the transaction log
+        // Look for number types, and use the string value for the map returned from this function
         
+        //TODO: use the field map in the dynamo configuration build the dynamo query and the type to cast to if not a string
         Map<String, Object> itemMap = new HashMap<>();
-        if(fieldToType != null && !fieldToType.isEmpty()) {
-            for(String fieldName: itemData.asMap().keySet()) {
-                
-                // Explicit field type mappings are passed in from configuration through fieldToType
-                // use this to cast/map fields to specific types.
-                String fieldType = fieldToType.getOrDefault(fieldName, DynamoDBAttributeType.NULL).toString().toLowerCase();
-                switch (fieldType) {
-                   
-                    case "s":
-                        // String
-                        itemMap.put(fieldName, itemData.getString(fieldName));
-                        break;
-                    case "n":
-                        // Number
-                        itemMap.put(fieldName, itemData.getNumber(fieldName));
-                        break;
-                    case "l":
-                        // Long
-                        itemMap.put(fieldName, itemData.getLong(fieldName));
-                        break;
-                    case "bool":
-                        // Boolean
-                        itemMap.put(fieldName, itemData.getBOOL(fieldName));
-                        break;
-                    case "b":
-                        // Binary
-                        itemMap.put(fieldName, itemData.getBinary(fieldName));
-                        break;
-                    case "ss":
-                        // String Set
-                        String[] stringArr = (String[]) itemData.getStringSet(fieldName).toArray();
-                        itemMap.put(fieldName, stringArr);
-                        break;
-                    case "ns":
-                        // Number Set
-                        Number[] numberArr = (Number[]) itemData.getNumberSet(fieldName).toArray();
-                        itemMap.put(fieldName, numberArr);
-                        break;
-                    case "bs":
-                        // binary set
-                        break;
-                    case "m": 
-                        // MAP
-                        break;
-                    case "null":
-                        // Null, treat null as "don't convert data type"
-                        itemMap.put(fieldName, itemData.get(fieldName));
-                        break;
-                    default:
-                        LOG.warn(String.format("DynamoDBAttributeType contains unaccounted for type: '%s'",
-                                fieldType));
+           for(String fieldName: itemData.asMap().keySet()) {
+                Object attributeObject = itemData.get(fieldName);
+                if(itemData.isNull(fieldName))
+                {
+                    continue;
                 }
-            }
-        } else {
-            itemMap = itemData.asMap();
-        }
-        
+                if(attributeObject instanceof Number)
+                {
+                    itemMap.put(fieldName, String.valueOf(attributeObject));
+                }
+                else
+                {
+                    itemMap.put(fieldName, attributeObject);
+                }
+           }
         return (T) itemMap;
     }
 
