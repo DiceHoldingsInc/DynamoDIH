@@ -21,6 +21,7 @@ import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClient; // aw
 import com.amazonaws.services.securitytoken.model.*;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapperFieldModel.DynamoDBAttributeType; // Dynamo types
 import com.amazonaws.services.dynamodbv2.model.AmazonDynamoDBException;
+import com.amazonaws.services.dynamodbv2.model.TableDescription;
 
 import org.apache.solr.handler.dataimport.DataImporter;
 import org.apache.solr.handler.dataimport.DataSource;
@@ -29,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.lang.invoke.MethodHandles;
 import java.util.*;
+import org.apache.solr.handler.dataimport.DataImportHandlerException;
 
 /**
  * A custom DataSource to be used as a DataImportHandler that interacts with Amazons DynamoDB
@@ -393,27 +395,20 @@ public class DynamoDataSource extends DataSource<Iterator<Map<String, Object>>> 
     
     public Iterator<Map<String, Object>> getData(Context context, String tableName, DynamoQueryParameters query) {
         // Check for the table, so a valuable error gets raised before we start iterating
-        List<String> tableNames = new LinkedList<>();
         try {
-             tableNames = dynamoClient.listTables().getTableNames();
+            TableDescription tableInfo = dynamoClient.describeTable(tableName).getTable();
+            if(tableInfo == null) {
+                    wrapAndThrow(SEVERE, new Exception(String.format("The dynamo table [%s] does not exist.", tableName)));
+                    return new EmptyIterator<>();
+            }
         } catch (AmazonDynamoDBException e) {
-            AmazonServiceException.ErrorType eType = e.getErrorType();
             if(e.getErrorCode().equals(ERROR_ACCESS_DENIED)) {
-                LOG.debug("Permission denied to list tables, skipping this action.");
+                LOG.debug("Permission denied to get table info, skipping this action.");
             } else {
-                LOG.warn("Unexpectd error, trying to list tables... " + e.getMessage());
+                LOG.warn("Unexpectd error, trying to get table info... " + e.getMessage());
             }
         }
-        
-        if(!tableNames.isEmpty() && !tableNames.contains(tableName)) {
-            List<String> shortened = tableNames.subList(0, Integer.min(tableNames.size() - 1, 20));
-            wrapAndThrow(SEVERE, new Exception(String.format(
-               "The dynamo table [%s] does not exist.  Valid tables: %s", tableName, shortened.toString()
-            )));
 
-            return new EmptyIterator<>();
-        }
-        
         Map<String, DynamoDBAttributeType> typeMap;
         if(explicitTypeMapping) {
             typeMap = getFieldTypeMapping(context);
